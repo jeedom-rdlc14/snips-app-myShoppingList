@@ -124,12 +124,13 @@ class ShoppingList(object):
 
     # --> Register callback function and start MQTT
     def start_blocking(self):
-        logger.info('...myQwitchen...')
+        logger.info('...myQShoppingList...')
         logger.info('Connection au MQTT broker' + MQTT_ADDR)
 
         with Hermes(MQTT_ADDR) as h:
             #h.subscribe_intent("Rdlc14:sendShoppingList", self.intent_send_callback).start()
-            h.subscribe_intents(self.master_intent_callback).start()
+            #h.subscribe_intents(self.master_intent_callback).start()
+            h.subscribe_intents(self.master_intent_callback).loop_forever()
 
 if __name__ == "__main__":
     ShoppingList()
