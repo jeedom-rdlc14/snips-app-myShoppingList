@@ -40,10 +40,13 @@ class ShoppingList(object):
         hermes.publish_end_session(intent_message.session_id, "")
 
         # action code goes here...
-        print('[Received] intent: {}'.format(intent_message.intent.intent_name))
+        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        logger.info(receivedMessage)
+        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        logger.info(confidenceMessage)
 
         # if need to speak the execution result by tts
-        #hermes.publish_start_session_notification(intent_message.site_id, "Action1 has been done")
+        # hermes.publish_start_session_notification(intent_message.site_id, "Action1 has been done")
 
     def intent_delete_callback(self, hermes, intent_message):
         logger.info('...intent-delete...')
@@ -51,7 +54,10 @@ class ShoppingList(object):
         hermes.publish_end_session(intent_message.session_id, "")
 
         # action code goes here...
-        print('[Received] intent: {}'.format(intent_message.intent.intent_name))
+        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        logger.info(receivedMessage)
+        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        logger.info(confidenceMessage)
 
         # if need to speak the execution result by tts
         # hermes.publish_start_session_notification(intent_message.site_id,"Action2 has been done")
@@ -62,7 +68,10 @@ class ShoppingList(object):
         hermes.publish_end_session(intent_message.session_id, "")
 
         # action code goes here...
-        print('[Received] intent: {}'.format(intent_message.intent.intent_name))
+        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        logger.info(receivedMessage)
+        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        logger.info(confidenceMessage)
 
         # if need to speak the execution result by tts
         #hermes.publish_start_session_notification(intent_message.site_id,"Action2 has been done")
@@ -73,7 +82,10 @@ class ShoppingList(object):
         hermes.publish_end_session(intent_message.session_id, "")
 
         # action code goes here...
-        print('[Received] intent: {}'.format(intent_message.intent.intent_name))
+        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        logger.info(receivedMessage)
+        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        logger.info(confidenceMessage)
 
         # if need to speak the execution result by tts
         #hermes.publish_start_session_notification(intent_message.site_id,"Action2 has been done")
@@ -84,7 +96,10 @@ class ShoppingList(object):
         hermes.publish_end_session(intent_message.session_id, "")
 
         # action code goes here...
-        print('[Received] intent: {}'.format(intent_message.intent.intent_name))
+        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        logger.info(receivedMessage)
+        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        logger.info(confidenceMessage)
 
         # if need to speak the execution result by tts
         #hermes.publish_start_session_notification(intent_message.site_id,"Action2 has been done")
@@ -95,9 +110,11 @@ class ShoppingList(object):
         hermes.publish_end_session(intent_message.session_id, "")
 
         # action code goes here...
-        print('[Received] intent: {}'.format(intent_message.intent.intent_name))
+        receivedmMessage = '[Received] intent : ' + intent_message.intent.intent_name
+        logger.info(receivedmMessage)
+        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        logger.info(confidenceMessage)
 
-        print('[Received] confidence: {}'.format(intent_message.intent.confidence_score))
         # if need to speak the execution result by tts
         #hermes.publish_start_session_notification(intent_message.site_id,"Action2 has been done")
 
@@ -129,8 +146,7 @@ class ShoppingList(object):
 
         with Hermes(MQTT_ADDR) as h:
             #h.subscribe_intent("Rdlc14:sendShoppingList", self.intent_send_callback).start()
-            #h.subscribe_intents(self.master_intent_callback).start()
-            h.subscribe_intents(self.master_intent_callback).loop_forever()
+            h.subscribe_intents(self.master_intent_callback).start()
 
 if __name__ == "__main__":
     ShoppingList()
