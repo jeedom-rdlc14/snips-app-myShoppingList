@@ -1,6 +1,7 @@
 # myShoppingList
-##Snips - Assistant de cuisine 
+## Snips - Assistant de cuisine 
 
-Ce project est mon premier projet d'assistant vocal Snips.
+Ce projet est mon premier projet d'assistant vocal Snips. Il  permet de gérer une liste de courses à la cuisine.
 
-Cet assistant  gérer une liste de courses intéractive à la cuisine.
+Pour la phase de tests, il est installé sur macOS, ensuite il sera déployé sur un  raspberry Pi.
+
