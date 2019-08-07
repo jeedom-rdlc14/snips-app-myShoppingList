@@ -37,7 +37,7 @@ def extract_nom(intent_message, default_user):
     """'
     nom = default_user
     if intent_message.slots.nom:
-        media = intent_message.slots.nom.first().value
+        nom = intent_message.slots.nom.first().value
 
     return nom
 
