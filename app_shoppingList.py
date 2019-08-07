@@ -3,13 +3,7 @@
 
 from hermes_python.hermes import Hermes
 from snipsTools import SnipsConfigParser
-import action_add as actionAdd
-import action_delete  as actionDelete
-import action_flush as actionFlush
-import action_list as actionList
-import action_print as actionPrint
-import action_send as actionSend
-from utils import getShoppingList, extract_nom, extract_media, extract_items
+from utils import getShoppingList, extract_nom, extract_media, extract_items, saveShoppingList
 
 import logging
 
@@ -29,7 +23,7 @@ logger = logging.getLogger('myShoppingList')
 logger.addHandler(logging.StreamHandler())
 
 #get the shopping list
-listedecourses = getShoppingList()
+listDeCourses = getShoppingList()
 
 resultToSpeak = ''
 
@@ -82,8 +76,8 @@ class ShoppingList(object):
         textToSpeak = ''
 
         for item in itemsToAdd:
-            if item not in listedecourses:
-                Listedecourses.append(item)
+            if item not in listDeCourses:
+                listDeCourses.append(item)
                 textToSpeak = textToSpeak + item + ', '
 
         messageToSpeak = textToSpeak + 'ajouté à la liste des courses.'
@@ -110,8 +104,8 @@ class ShoppingList(object):
         textToSpeak = ''
         itemsToDel = extract_items(intent_message)
         for item in itemsToDel:
-            if item in listedecourses:
-                listedecourses.remove(item)
+            if item in listDeCourses:
+                listDeCourses.remove(item)
                 textToSpeak = textToSpeak + item + ', '
 
         messageToSpeak = textToSpeak + 'retiré de la liste des courses.'
@@ -134,10 +128,10 @@ class ShoppingList(object):
         confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
         logger.info(confidenceMessage)
 
-        lengthListe = len(listedecourses)
+        lengthListe = len(listDeCourses)
         textToSpeak = ''
-        for item in listedecourses:
-            listedecourses.remove(item)
+        for item in listDeCourses:
+            listDeCourses.remove(item)
             textToSpeak = textToSpeak + item + ', '
 
         messageToSpeak = lengthListe + ' produits ' + textToSpeak + ' ont été retirés de la liste des courses.'
@@ -161,13 +155,13 @@ class ShoppingList(object):
         logger.info(confidenceMessage)
 
         textToSpeak = ''
-        if len(panier) == 0:
+        if len(listDeCourses) == 0:
             messageToSpeak = 'Le panier est vide'
         else:
-            for item in listedecourses:
+            for item in listDeCourses:
                 textToSpeak = textToSpeak + item + ', '
 
-        messageToSpeak = 'Tu as ' + textToSpeak + 'dans ta liste des courses.'
+            messageToSpeak = 'Tu as ' + textToSpeak + 'dans ta liste des courses.'
 
         logger.info(messageToSpeak)
 
@@ -189,11 +183,12 @@ class ShoppingList(object):
         logger.info(confidenceMessage)
 
 
-        if len(listedecourses) == 0:
-            messageToSpeak = "Le panier est vide. Pas d'impression"'
+        if len(listDeCourses) == 0:
+            messageToSpeak = "Le panier est vide. Pas d'impression"
         else:
-            # writing list to file and print
-
+            # writing list to file
+            saveShoppingList(listDeCourses)
+            # send file to printer
             messageToSpeak = "La liste des courses a été envoyée à l'imprimante."
 
         logger.info(messageToSpeak)
@@ -215,13 +210,16 @@ class ShoppingList(object):
         confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
         logger.info(confidenceMessage)
 
-        media = extract_media(intent_message, default_media)
-        utilisateur = extract_nom(intent_message, default_user)
+        media = extract_media(intent_message, self.config['default_media'])
+        user = extract_nom(intent_message, self.config['default_user'])
 
-        if len(listedecourses) == 0:
-            messageToSpeak = "Le liste des courses vide. Pas d'envoi."
+        if len(listDeCourses) == 0:
+            messageToSpeak = "Le liste des courses est vide. Pas d'envoi."
         else:
             # writing list to file and send
+            saveShoppingList(listDeCourses)
+            # send to user
+            logger.info("L'envoi sur " + media  + " de " + user + " n'est pas opérationnel.")
 
             messageToSpeak = "La liste des courses a été envoyée sur " + media
 
