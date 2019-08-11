@@ -92,9 +92,9 @@ def send_mail(msgToSend):
     """
         send the message to SMTP server
     """
-    serveur = ServeurSMTP('smtp.orange.fr', 25, 'alain.bisson@wanadoo.fr', 'ORRanv14860')
-    exped = 'Alain <alain.bisson@gmail.com>'
-    to = ['alain.bisson@gmail.com']
+    serveur = ServeurSMTP(SMTP_ADDR,SMTP_PORT, LOGIN, PASSWD')
+    exped = mail_from
+    to = mail_default_use
     cc = []
     bcc = []
     sujet = 'Liste des courses'
