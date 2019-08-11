@@ -1,5 +1,6 @@
 venv/
 *.pyc
 config.ini
-shoppingList.log
-panier.json
+/shoppingList.log
+/panier.json
+/shoppingList.txt

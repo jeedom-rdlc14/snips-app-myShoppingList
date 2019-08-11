@@ -1,7 +1,14 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 
+import sys
 import os
+#from email.mime.multipart import MIMEMultipart
+#from email.mime.base import MIMEBase
+#from email.mime.text import MIMEText
+#from email.utils import COMMASPACE, formatdate
+#from email import encoders
+from mailUtils import *
 
 def extract_items(intent_message):
     """
@@ -15,6 +22,7 @@ def extract_items(intent_message):
             items.append(ajout.value)
 
     return items
+
 
 def extract_media(intent_message, default_media):
     """
@@ -30,6 +38,7 @@ def extract_media(intent_message, default_media):
 
     return media
 
+
 def extract_nom(intent_message, default_user):
     """
         extract slot nom
@@ -43,14 +52,15 @@ def extract_nom(intent_message, default_user):
 
     return nom
 
-def getShoppingList():
+
+def get_shopping_list():
     """
         manage the shoppingList
     """
     shoppingListFile = './shoppingList.txt'
     if os.path.isfile(shoppingListFile):
         with open(shoppingListFile, mode='r', encoding='utf-8') as file_handler:
-            listCourses = file_handler.readlines()
+            listCourses = file_handler.read().splitlines()
 
         file_handler.close()
     else:
@@ -58,17 +68,49 @@ def getShoppingList():
 
     return listCourses
 
-def saveShoppingList(listDeCourses):
+
+def save_shopping_list(listDeCourses):
     """
         save the shoppingList
         :param listCourses
     """
     with open('./shoppingList.txt', mode='w', encoding='utf-8') as file_handler:
-        file_handler.write("  LISTE DES COURSES\n")
-        file_handler.write("---------------------\n")
         for item in listDeCourses:
             file_handler.write("{}\n".format(item))
 
         file_handler.close()
 
+
+def get_message_tosend(listDeCourses):
+    msgToSend = " LISTE DE COURSES\n"
+    for item in listDeCourses:
+        msgToSend = msgToSend + item + "\n"
+
+    return msgToSend
+
+def send_mail(msgToSend):
+    """
+        send the message to SMTP server
+    """
+    serveur = ServeurSMTP('smtp.orange.fr', 25, 'alain.bisson@wanadoo.fr', 'ORRanv14860')
+    exped = 'Alain <alain.bisson@gmail.com>'
+    to = ['alain.bisson@gmail.com']
+    cc = []
+    bcc = []
+    sujet = 'Liste des courses'
+    corps = msgToSend
+    pjointes = []
+    codage = 'UTF-8'
+    typetexte = 'plain'
+
+    try:
+        message = MessageSMTP(exped, to, cc, bcc, sujet, corps, pjointes, codage, typetexte)
+
+    except:
+        print('ERREUR : err'.format(err=sys.exec_info()[1]))
+        sys.exit()
+
+    response = send_smtp(message, serveur)
+
+    return response
 

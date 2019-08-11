@@ -3,8 +3,7 @@
 
 from hermes_python.hermes import Hermes
 from snipsTools import SnipsConfigParser
-from utils import getShoppingList, extract_nom, extract_media, extract_items, saveShoppingList
-
+from utils import get_shopping_list, extract_nom, extract_media, extract_items, save_shopping_list, send_mail, get_message_tosend
 import logging
 
 CONFIG_INI = "config.ini"
@@ -12,6 +11,10 @@ CONFIG_INI = "config.ini"
 MQTT_IP_ADDR = "localhost"
 MQTT_PORT = 1883
 MQTT_ADDR = "{}:{}".format(MQTT_IP_ADDR, str(MQTT_PORT))
+
+MEDIA = 'mail'
+USERNAME = 'alain'
+MAIL_ADDR = 'alain.bisson@gmail.com'
 
 lang = "FR"
 
@@ -22,10 +25,11 @@ logging.basicConfig(format='%(asctime)s [%(threadName)s] - [%(levelname)s] - %(m
 logger = logging.getLogger('myShoppingList')
 logger.addHandler(logging.StreamHandler())
 
-#get the shopping list
-listDeCourses = getShoppingList()
+# get the shopping list
+listDeCourses = get_shopping_list()
 
 resultToSpeak = ''
+
 
 class ShoppingList(object):
     """
@@ -38,14 +42,16 @@ class ShoppingList(object):
         """
         try:
             self.config = SnipsConfigParser.read_configuration_file(CONFIG_INI)
-        except :
+            print(config)
+        except:
+            print('config --> vide')
             self.config = None
 
         # start listening to MQTT
         self.start_blocking()
 
-
-    def terminate_feedback(self, hermes, intent_message, mode='default'):
+    @staticmethod
+    def terminate_feedback(hermes, intent_message, mode='default'):
         """
             feedback reply // future function
             :param hermes:
@@ -55,7 +61,6 @@ class ShoppingList(object):
         if mode == 'default':
             hermes.publish_end_session(intent_message.session_id, "")
         else:
-            #### more design
             hermes.publish_end_session(intent_message.session_id, "")
 
     def intent_add_callback(self, hermes, intent_message):
@@ -128,13 +133,13 @@ class ShoppingList(object):
         confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
         logger.info(confidenceMessage)
 
-        lengthListe = len(listDeCourses)
+        lengthList = len(listDeCourses)
         textToSpeak = ''
         for item in listDeCourses:
             listDeCourses.remove(item)
             textToSpeak = textToSpeak + item + ', '
 
-        messageToSpeak = lengthListe + ' produits ' + textToSpeak + ' ont été retirés de la liste des courses.'
+        messageToSpeak = str(lengthList) + ' produits ' + textToSpeak + ' ont été retirés de la liste des courses.'
         logger.info(messageToSpeak)
 
         self.terminate_feedback(hermes, intent_message)
@@ -155,13 +160,14 @@ class ShoppingList(object):
         logger.info(confidenceMessage)
 
         textToSpeak = ''
-        if len(listDeCourses) == 0:
-            messageToSpeak = 'Le panier est vide'
+        lengthList = len(listDeCourses)
+        if lengthList == 0:
+            messageToSpeak = 'La liste des courses est vide'
         else:
             for item in listDeCourses:
                 textToSpeak = textToSpeak + item + ', '
 
-            messageToSpeak = 'Tu as ' + textToSpeak + 'dans ta liste des courses.'
+            messageToSpeak = 'Tu as ' + str(lengthList) + ' produits ' + textToSpeak + 'dans ta liste des courses.'
 
         logger.info(messageToSpeak)
 
@@ -182,12 +188,11 @@ class ShoppingList(object):
         confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
         logger.info(confidenceMessage)
 
-
         if len(listDeCourses) == 0:
             messageToSpeak = "Le panier est vide. Pas d'impression"
         else:
             # writing list to file
-            saveShoppingList(listDeCourses)
+            save_shopping_list(listDeCourses)
             # send file to printer
             messageToSpeak = "La liste des courses a été envoyée à l'imprimante."
 
@@ -210,18 +215,23 @@ class ShoppingList(object):
         confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
         logger.info(confidenceMessage)
 
-        media = extract_media(intent_message, self.config['default_media'])
-        user = extract_nom(intent_message, self.config['default_user'])
+        media = extract_media(intent_message, 'mail')
+        user = extract_nom(intent_message, 'Alain')
 
         if len(listDeCourses) == 0:
             messageToSpeak = "Le liste des courses est vide. Pas d'envoi."
         else:
             # writing list to file and send
-            saveShoppingList(listDeCourses)
+            save_shopping_list(listDeCourses)
             # send to user
-            logger.info("L'envoi sur " + media  + " de " + user + " n'est pas opérationnel.")
+            msgToSend = get_message_tosend(listDeCourses)
+            response = send_mail(msgToSend)
 
-            messageToSpeak = "La liste des courses a été envoyée sur " + media
+            if response == '':
+                messageToSpeak = "La liste des courses a été envoyée sur le " + media + " de " + user
+            else:
+                logger.info("Envoi sur le " + media + " de " + user + " a échoué")
+                messageToSpeak = "Echec de l'envoi sur le " + media + " de " + user
 
         logger.info(messageToSpeak)
 
