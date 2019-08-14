@@ -300,16 +300,18 @@ if __name__ == "__main__":
     MQTT_PORT = config["global"].get("mqtt_port")
     MQTT_ADDR = "{}:{}".format(MQTT_IP_ADDR, str(MQTT_PORT))
 
-    MEDIA = config["secret"].get("default_media")
-    USERNAME = config["secret"].get("default_user")
-    MAIL_TO = config["secret"].get("mail_default_user")
-    SMTP_ADDR = config["secret"].get("smtp_server")
-    SMTP_PORT = config["secret"].get("smtp_port")
-    LOGIN = config["secret"].get("smtp_login")
-    PASSWD = config["secret"].get("smtp_passwd")
-    MAIL_FROM = config["secret"].get("mail_from")
+    MEDIA = config["media"].get("default_media")
+    USERNAME = config["mail"].get("default_user")
+    MAIL_TO = config["mail"].get("mail_default_user")
+    SMTP_ADDR = config["mail"].get("smtp_server")
+    SMTP_PORT = config["mail"].get("smtp_port")
+    LOGIN = config["mail"].get("smtp_login")
+    PASSWD = config["mail"].get("smtp_passwd")
+    MAIL_FROM = config["mail"].get("mail_from")
 
-    locale = config["secret"].get("locale")
+    PRINTER = config["printer"].get("default_printer")
+
+    locale = config["global"].get("locale")
 
     # logging config
     logging.basicConfig(
