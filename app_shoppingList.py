@@ -321,7 +321,7 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("myShoppingList")
     handler = logging.StreamHandler()
-    file_handler = RotatingFileHandler('/var/log/supervisor/shoppinglist.log', maxBytes=10000, backupCount=3)
+    file_handler = RotatingFileHandler('/var/log/supervisor/assistants/shoppinglist/myshoppinglist.log', maxBytes=10000, backupCount=3)
     logger.addHandler(file_handler)
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
