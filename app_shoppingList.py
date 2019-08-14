@@ -3,32 +3,21 @@
 
 from hermes_python.hermes import Hermes
 from snipsTools import SnipsConfigParser
-from utils import get_shopping_list, extract_nom, extract_media, extract_items, save_shopping_list, send_mail, get_message_tosend
+import const
+from utils import (
+    get_shopping_list,
+    extract_nom,
+    extract_media,
+    extract_items,
+    save_shopping_list,
+    send_mail,
+    get_message_tosend,
+)
+
 import logging
+from logging.handlers import RotatingFileHandler
 
 CONFIG_INI = "config.ini"
-
-MQTT_IP_ADDR = "localhost"
-MQTT_PORT = 1883
-MQTT_ADDR = "{}:{}".format(MQTT_IP_ADDR, str(MQTT_PORT))
-
-MEDIA = 'mail'
-USERNAME = 'alain'
-MAIL_ADDR = 'alain.bisson@gmail.com'
-
-lang = "FR"
-
-logging.basicConfig(format='%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s', level=logging.INFO,
-                    filename='myShoppingList.log', filemode='w'
-                    )
-
-logger = logging.getLogger('myShoppingList')
-logger.addHandler(logging.StreamHandler())
-
-# get the shopping list
-listDeCourses = get_shopping_list()
-
-resultToSpeak = ''
 
 
 class ShoppingList(object):
@@ -37,28 +26,17 @@ class ShoppingList(object):
     """
 
     def __init__(self):
-        """
-        get the configuration if needed
-        """
-        try:
-            self.config = SnipsConfigParser.read_configuration_file(CONFIG_INI)
-            print(config)
-        except:
-            print('config --> vide')
-            self.config = None
-
-        # start listening to MQTT
         self.start_blocking()
 
     @staticmethod
-    def terminate_feedback(hermes, intent_message, mode='default'):
+    def terminate_feedback(hermes, intent_message, mode="default"):
         """
             feedback reply // future function
             :param hermes:
             :param intent_message:
             :param mode:
         """
-        if mode == 'default':
+        if mode == "default":
             hermes.publish_end_session(intent_message.session_id, "")
         else:
             hermes.publish_end_session(intent_message.session_id, "")
@@ -72,25 +50,32 @@ class ShoppingList(object):
         """
 
         # action code goes here...
-        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        receivedMessage = "[Received] intent: {}".format(
+            intent_message.intent.intent_name
+        )
         logger.info(receivedMessage)
-        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        confidenceMessage = "[Received] confidence: : " + str(
+            intent_message.intent.confidence_score
+        )
         logger.info(confidenceMessage)
 
         itemsToAdd = extract_items(intent_message)
-        textToSpeak = ''
+        texttospeak = ""
 
         for item in itemsToAdd:
             if item not in listDeCourses:
                 listDeCourses.append(item)
-                textToSpeak = textToSpeak + item + ', '
+                texttospeak = texttospeak + item + ", "
 
-        messageToSpeak = textToSpeak + 'ajouté à la liste des courses.'
-        logger.info(messageToSpeak)
+        messagetospeak = const.ADD_OK.format(texttospeak=texttospeak)
+
+        logger.info(messagetospeak)
 
         self.terminate_feedback(hermes, intent_message)
         # speak the execution result by tts
-        hermes.publish_start_session_notification(intent_message.site_id, messageToSpeak, 'Shopping_list_APP')
+        hermes.publish_start_session_notification(
+            intent_message.site_id, messagetospeak, "Shopping_list_APP"
+        )
 
     def intent_delete_callback(self, hermes, intent_message):
         """
@@ -101,24 +86,30 @@ class ShoppingList(object):
         """
 
         # action code ...
-        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        receivedMessage = "[Received] intent: {}".format(
+            intent_message.intent.intent_name
+        )
         logger.info(receivedMessage)
-        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        confidenceMessage = "[Received] confidence: : " + str(
+            intent_message.intent.confidence_score
+        )
         logger.info(confidenceMessage)
 
-        textToSpeak = ''
+        texttospeak = ""
         itemsToDel = extract_items(intent_message)
         for item in itemsToDel:
             if item in listDeCourses:
                 listDeCourses.remove(item)
-                textToSpeak = textToSpeak + item + ', '
+                texttospeak = texttospeak + item + ", "
 
-        messageToSpeak = textToSpeak + 'retiré de la liste des courses.'
-        logger.info(messageToSpeak)
+        messagetospeak = const.DEL_OK.format(texttospeak=texttospeak)
+        logger.info(messagetospeak)
 
         self.terminate_feedback(hermes, intent_message)
         # speak the execution result by tts
-        hermes.publish_start_session_notification(intent_message.site_id, messageToSpeak, 'Shopping_ist_APP')
+        hermes.publish_start_session_notification(
+            intent_message.site_id, messagetospeak, "Shopping_ist_APP"
+        )
 
     def intent_flush_callback(self, hermes, intent_message):
         """
@@ -128,23 +119,29 @@ class ShoppingList(object):
             :param intent_message:
         """
         # action code ...
-        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        receivedMessage = "[Received] intent: {}".format(
+            intent_message.intent.intent_name
+        )
         logger.info(receivedMessage)
-        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        confidenceMessage = "[Received] confidence: : " + str(
+            intent_message.intent.confidence_score
+        )
         logger.info(confidenceMessage)
 
-        lengthList = len(listDeCourses)
-        textToSpeak = ''
+        lengthlist = len(listDeCourses)
+        texttospeak = ""
         for item in listDeCourses:
             listDeCourses.remove(item)
-            textToSpeak = textToSpeak + item + ', '
+            texttospeak = texttospeak + item + ", "
 
-        messageToSpeak = str(lengthList) + ' produits ' + textToSpeak + ' ont été retirés de la liste des courses.'
-        logger.info(messageToSpeak)
+        messagetospeak = const.FLUSH_OK.format(length=lengthlist, texttospeak=texttospeak)
+        logger.info(messagetospeak)
 
         self.terminate_feedback(hermes, intent_message)
         # speak the execution result by tts
-        hermes.publish_start_session_notification(intent_message.site_id, messageToSpeak, 'Shopping_ist_APP')
+        hermes.publish_start_session_notification(
+            intent_message.site_id, messagetospeak, "Shopping_ist_APP"
+        )
 
     def intent_list_callback(self, hermes, intent_message):
         """
@@ -154,26 +151,32 @@ class ShoppingList(object):
             :param intent_message:
         """
         # action code ...
-        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        receivedMessage = "[Received] intent: {}".format(
+            intent_message.intent.intent_name
+        )
         logger.info(receivedMessage)
-        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        confidenceMessage = "[Received] confidence: : " + str(
+            intent_message.intent.confidence_score
+        )
         logger.info(confidenceMessage)
 
-        textToSpeak = ''
-        lengthList = len(listDeCourses)
-        if lengthList == 0:
-            messageToSpeak = 'La liste des courses est vide'
+        texttospeak = ""
+        lengthlist = len(listDeCourses)
+        if lengthlist == 0:
+            messagetospeak = const.LIST_VIDE
         else:
             for item in listDeCourses:
-                textToSpeak = textToSpeak + item + ', '
+                texttospeak = texttospeak + item + ", "
 
-            messageToSpeak = 'Tu as ' + str(lengthList) + ' produits ' + textToSpeak + 'dans ta liste des courses.'
+            messagetospeak = const.LIST_OK.format(length=lengthlist, texttospeak=texttospeak)
 
-        logger.info(messageToSpeak)
+        logger.info(messagetospeak)
 
         self.terminate_feedback(hermes, intent_message)
         # speak the execution result by tts
-        hermes.publish_start_session_notification(intent_message.site_id, messageToSpeak, 'Shopping_ist_APP')
+        hermes.publish_start_session_notification(
+            intent_message.site_id, messagetospeak, "Shopping_ist_APP"
+        )
 
     def intent_print_callback(self, hermes, intent_message):
         """
@@ -183,24 +186,30 @@ class ShoppingList(object):
             :param intent_message:
         """
         # action code ...
-        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
+        receivedMessage = "[Received] intent: {}".format(
+            intent_message.intent.intent_name
+        )
         logger.info(receivedMessage)
-        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        confidenceMessage = "[Received] confidence: : " + str(
+            intent_message.intent.confidence_score
+        )
         logger.info(confidenceMessage)
 
         if len(listDeCourses) == 0:
-            messageToSpeak = "Le panier est vide. Pas d'impression"
+            messagetospeak = const.PRINT_VIDE
         else:
             # writing list to file
             save_shopping_list(listDeCourses)
             # send file to printer
-            messageToSpeak = "La liste des courses a été envoyée à l'imprimante."
+            messagetospeak = const.PRINT_OK
 
-        logger.info(messageToSpeak)
+        logger.info(messagetospeak)
 
         self.terminate_feedback(hermes, intent_message)
         # speak the execution result by tts
-        hermes.publish_start_session_notification(intent_message.site_id, messageToSpeak, 'Shopping_ist_APP')
+        hermes.publish_start_session_notification(
+            intent_message.site_id, messagetospeak, "Shopping_ist_APP"
+        )
 
     def intent_send_callback(self, hermes, intent_message):
         """
@@ -210,34 +219,40 @@ class ShoppingList(object):
             :param intent_message:
         """
         # action code ...
-        receivedMessage = '[Received] intent: {}'.format(intent_message.intent.intent_name)
-        logger.info(receivedMessage)
-        confidenceMessage = '[Received] confidence: : ' + str(intent_message.intent.confidence_score)
+        receivedmessage = "[Received] intent: {}".format(
+            intent_message.intent.intent_name
+        )
+        logger.info(receivedmessage)
+        confidenceMessage = "[Received] confidence: : " + str(
+            intent_message.intent.confidence_score
+        )
         logger.info(confidenceMessage)
 
-        media = extract_media(intent_message, 'mail')
-        user = extract_nom(intent_message, 'Alain')
+        media = extract_media(intent_message, "mail")
+        user = extract_nom(intent_message, "Alain")
 
         if len(listDeCourses) == 0:
-            messageToSpeak = "Le liste des courses est vide. Pas d'envoi."
+            messagetospeak = const.SENT_VIDE
         else:
             # writing list to file and send
             save_shopping_list(listDeCourses)
             # send to user
             msgToSend = get_message_tosend(listDeCourses)
-            response = send_mail(msgToSend)
-
-            if response == '':
-                messageToSpeak = "La liste des courses a été envoyée sur le " + media + " de " + user
+            response = send_mail(
+                SMTP_ADDR, SMTP_PORT, LOGIN, PASSWD, MAIL_FROM, MAIL_TO, msgToSend
+            )
+            if response == "":
+                messagetospeak = const.SENT_OK.format(media=media, user=user)
             else:
-                logger.info("Envoi sur le " + media + " de " + user + " a échoué")
-                messageToSpeak = "Echec de l'envoi sur le " + media + " de " + user
+                messagetospeak = const.SENT_KO.format(media=media, user=user)
 
-        logger.info(messageToSpeak)
+        logger.info(messagetospeak)
 
         self.terminate_feedback(hermes, intent_message)
         # speak the execution result by tts
-        hermes.publish_start_session_notification(intent_message.site_id, messageToSpeak, 'Shopping_ist_APP')
+        hermes.publish_start_session_notification(
+            intent_message.site_id, messagetospeak, "Shopping_ist_APP"
+        )
 
     def master_intent_callback(self, hermes, intent_message):
         """
@@ -246,34 +261,79 @@ class ShoppingList(object):
             :param intent_message:
         """
         coming_intent = intent_message.intent.intent_name
-        if coming_intent == 'Rdlc14:addItemOnShoppingList':
+        if coming_intent == "Rdlc14:addItemOnShoppingList":
             self.intent_add_callback(hermes, intent_message)
-        if coming_intent == 'Rdlc14:deleteItemOnShoppingList':
+        if coming_intent == "Rdlc14:deleteItemOnShoppingList":
             self.intent_delete_callback(hermes, intent_message)
-        if coming_intent == 'Rdlc14:itemsOnShoppingList':
+        if coming_intent == "Rdlc14:itemsOnShoppingList":
             self.intent_list_callback(hermes, intent_message)
-        if coming_intent == 'Rdlc14:flushShoppingList':
+        if coming_intent == "Rdlc14:flushShoppingList":
             self.intent_flush_callback(hermes, intent_message)
-        if coming_intent == 'Rdlc14:printShoppingList':
+        if coming_intent == "Rdlc14:printShoppingList":
             self.intent_print_callback(hermes, intent_message)
-        if coming_intent == 'Rdlc14:sendShoppingList':
+        if coming_intent == "Rdlc14:sendShoppingList":
             self.intent_send_callback(hermes, intent_message)
 
     def start_blocking(self):
         """
             Register callback function and start MQTT bus.
         """
-        logger.info('...myShoppingList...')
-        logger.info('Connection au MQTT broker' + MQTT_ADDR)
+        logger.info("...myShoppingList...")
+        logger.info("Connection au MQTT broker" + MQTT_ADDR)
 
         with Hermes(MQTT_ADDR) as h:
             h.subscribe_intents(self.master_intent_callback).start()
 
 
 # main function
+
+
 if __name__ == "__main__":
+    try:
+        config = SnipsConfigParser.read_configuration_file(CONFIG_INI)
+
+    except:
+        print("config --> vide")
+        config = None
+
+    MQTT_IP_ADDR = config["global"].get("mqtt_host")
+    MQTT_PORT = config["global"].get("mqtt_port")
+    MQTT_ADDR = "{}:{}".format(MQTT_IP_ADDR, str(MQTT_PORT))
+
+    MEDIA = config["secret"].get("default_media")
+    USERNAME = config["secret"].get("default_user")
+    MAIL_TO = config["secret"].get("mail_default_user")
+    SMTP_ADDR = config["secret"].get("smtp_server")
+    SMTP_PORT = config["secret"].get("smtp_port")
+    LOGIN = config["secret"].get("smtp_login")
+    PASSWD = config["secret"].get("smtp_passwd")
+    MAIL_FROM = config["secret"].get("mail_from")
+
+    locale = config["secret"].get("locale")
+
+    # logging config
+    logging.basicConfig(
+        format="%(asctime)s - [%(levelname)s] - %(message)s",
+        level=logging.INFO,
+        filename="myShoppingList.log",
+        filemode="w",
+    )
+
+    logger = logging.getLogger("myShoppingList")
+    handler = logging.StreamHandler()
+    file_handler = RotatingFileHandler('/var/log/supervisor/shoppinglist.log', maxBytes=10000, backupCount=3)
+    logger.addHandler(file_handler)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+
+    # get the shopping list
+    listDeCourses = get_shopping_list()
+
+    resultToSpeak = ""
+
     try:
         ShoppingList()
 
     except KeyboardInterrupt:
-        logger.info('...myQShoppingList --> stop ...')
+        logger.info("...myQShoppingList --> stop ...")

@@ -2,19 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import os
-#from email.mime.multipart import MIMEMultipart
-#from email.mime.base import MIMEBase
-#from email.mime.text import MIMEText
-#from email.utils import COMMASPACE, formatdate
-#from email import encoders
 from mailUtils import *
+
 
 def extract_items(intent_message):
     """
         extract slot item
         used by add action, delete action (intents : addItemOnShoppingList, deleteItemOnShoppingList)
-        :param intent_message
+        :param intent_message:
     """
     items = []
     if intent_message.slots.item:
@@ -28,8 +23,8 @@ def extract_media(intent_message, default_media):
     """
         extract slot media
         used by send action (intent : sendShoppingList)
-        :param intent_message
-        :param default_media
+        :param intent_message::
+        :param default_media:
     """
 
     media = default_media
@@ -43,8 +38,8 @@ def extract_nom(intent_message, default_user):
     """
         extract slot nom
         used by send action (intent : sendShoppingList)
-        :param intent_message
-        :param default_user
+        :param intent_message:
+        :param default_user:
     """
     nom = default_user
     if intent_message.slots.nom:
@@ -57,9 +52,9 @@ def get_shopping_list():
     """
         manage the shoppingList
     """
-    shoppingListFile = './shoppingList.txt'
+    shoppingListFile = "./shoppingList.txt"
     if os.path.isfile(shoppingListFile):
-        with open(shoppingListFile, mode='r', encoding='utf-8') as file_handler:
+        with open(shoppingListFile, mode="r", encoding="utf-8") as file_handler:
             listCourses = file_handler.read().splitlines()
 
         file_handler.close()
@@ -72,9 +67,9 @@ def get_shopping_list():
 def save_shopping_list(listDeCourses):
     """
         save the shoppingList
-        :param listCourses
+        :param listDeCourses: shopping list
     """
-    with open('./shoppingList.txt', mode='w', encoding='utf-8') as file_handler:
+    with open("./shoppingList.txt", mode="w", encoding="utf-8") as file_handler:
         for item in listDeCourses:
             file_handler.write("{}\n".format(item))
 
@@ -88,29 +83,39 @@ def get_message_tosend(listDeCourses):
 
     return msgToSend
 
-def send_mail(msgToSend):
+
+def send_mail(SMTP_ADDR, SMTP_PORT, LOGIN, PASSWD, MAIL_FROM, MAIL_TO, msgToSend):
     """
         send the message to SMTP server
+        :param SMTP_ADDR: smtp.domain name
+        :param SMTP_PORT: port number
+        :PARAM LOGIN: email
+        :param PASSWD: password
+        :param MAIL_FROM: mail address of the sender
+        :param MAIL_TO: mail address
+        :param msgToSend: message with shopping list
     """
-    serveur = ServeurSMTP(SMTP_ADDR,SMTP_PORT, LOGIN, PASSWD')
-    exped = mail_from
-    to = mail_default_use
+    serveur = ServerSMTP(SMTP_ADDR, SMTP_PORT, LOGIN, PASSWD)
+
+    exped = MAIL_FROM
+    to = MAIL_TO
     cc = []
     bcc = []
-    sujet = 'Liste des courses'
+    sujet = "Liste des courses"
     corps = msgToSend
     pjointes = []
-    codage = 'UTF-8'
-    typetexte = 'plain'
+    codage = "UTF-8"
+    typetexte = "plain"
 
     try:
-        message = MessageSMTP(exped, to, cc, bcc, sujet, corps, pjointes, codage, typetexte)
+        message = MessageSMTP(
+            exped, to, cc, bcc, sujet, corps, pjointes, codage, typetexte
+        )
 
     except:
-        print('ERREUR : err'.format(err=sys.exec_info()[1]))
+        print("ERREUR : err".format(err=sys.exec_info()[1]))
         sys.exit()
 
     response = send_smtp(message, serveur)
 
     return response
-

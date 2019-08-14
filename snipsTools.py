@@ -14,7 +14,7 @@ class SnipsConfigParser(configparser.SafeConfigParser):
                 conf_parser = SnipsConfigParser()
                 conf_parser.readfp(f)
                 return conf_parser.to_dict()
-        except (IOError, ConfigParser.Error) as e:
+        except (IOError, configparser.Error) as e:
             print(e)
             return dict()
 
@@ -29,7 +29,7 @@ class SnipsConfigParser(configparser.SafeConfigParser):
             with open(configuration_file, 'w') as f:
                 conf_parser.write(f)
                 return True
-        except (IOError, ConfigParser.Error) as e:
+        except (IOError, configparser.Error) as e:
             print(e)
             return False
 

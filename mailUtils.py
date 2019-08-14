@@ -10,8 +10,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.utils import formatdate
 
-class ServeurSMTP(object):
 
+class ServerSMTP(object):
     def __init__(self, address, port, login, mdpass):
         """
             conserve les paramètres d'un compte mail sur un serveur SMTP
@@ -21,70 +21,86 @@ class ServeurSMTP(object):
         self.login = login
         self.mdpass = mdpass
 
-class MessageSMTP(object):
 
-    def __init__(self, exped="", to=(), cc=(), bcc=(), sujet="", corps="", pjointes=(), codage='UTF-8', typetexte='plain'):
+class MessageSMTP(object):
+    def __init__(
+        self,
+        exped="",
+        to=(),
+        cc=(),
+        bcc=(),
+        sujet="",
+        corps="",
+        pjointes=(),
+        codage="UTF-8",
+        typetexte="plain",
+    ):
         """
             build a mail object with params
         """
         self.expediteur = exped
 
         if isinstance(to, str):
-            to = to.split(';')
+            to = to.split(";")
 
-        if to == [] or to == ['']:
+        if to == [] or to == [""]:
             raise ValueError("failed: no to.")
 
-        if sujet == '':
+        if sujet == "":
             raise ValueError("failed: no subject.")
 
         if isinstance(cc, str):
-            cc = cc.split(';')
+            cc = cc.split(";")
 
         if isinstance(bcc, str):
-            bcc = bcc.split(';')
+            bcc = bcc.split(";")
 
         if isinstance(pjointes, str):
-            pjointes = pjointes.split(';')
+            pjointes = pjointes.split(";")
 
         if codage == "":
-            codage = 'UTF-8'
+            codage = "UTF-8"
 
         if not pjointes:
             # there is no attached piece
             msg = MIMEText(corps, typetexte, _charset=codage)
         else:
             # message "multipart" within one or more attached pieces
-            msg = MIMEMultipart('alternatives')
+            msg = MIMEMultipart("alternatives")
 
-        msg['From'] = exped
-        msg['To'] = ', '.join(to)
-        msg['Cc'] = ', '.join(cc)
-        msg['Bcc'] = ', '.join(bcc)
-        msg['Date'] = formatdate(localtime=True)
-        msg['Subject'] = sujet
-        msg['Charset'] = codage
-        msg['Content-Type'] = 'text/' + typetexte + '; charset=' + codage
+        msg["From"] = exped
+        msg["To"] = ", ".join(to)
+        msg["Cc"] = ", ".join(cc)
+        msg["Bcc"] = ", ".join(bcc)
+        msg["Date"] = formatdate(localtime=True)
+        msg["Subject"] = sujet
+        msg["Charset"] = codage
+        msg["Content-Type"] = "text/" + typetexte + "; charset=" + codage
 
         if pjointes:
             msg.attach(MIMEText(corps, typetexte, _charset=codage))
 
             # add attached piece
             for file in pjointes:
-                part = MIMEBase('application', "octet-stream")
+                part = MIMEBase("application", "octet-stream")
                 try:
                     with open(file, "rb") as f:
                         part.set_payload(f.read())
                 except Exception as errMsg:
-                    raise ValueError("failed when reading attached file(" + str(errMsg) + ")")
+                    raise ValueError(
+                        "failed when reading attached file(" + str(errMsg) + ")"
+                    )
                 encoders.encode_base64(part)
-                part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(file),)
+                part.add_header(
+                    "Content-Disposition", "attachment", filename=os.path.basename(file)
+                )
                 msg.attach(part)
 
         self.mail = msg.as_string()
         self.destinataires = to
         self.destinataires.extend(cc)
         self.destinataires.extend(bcc)
+
 
 def send_smtp(message, server):
     """
@@ -112,11 +128,13 @@ def send_smtp(message, server):
 
     # send the mail
     try:
-            response = smtp.sendmail(message.expediteur, message.destinataires, message.mail)
+        response = smtp.sendmail(
+            message.expediteur, message.destinataires, message.mail
+        )
 
     except Exception as msgerr:
         print(type(msgerr))
-        return 'failed to send mail (' + str(msgerr) + ')'
+        return "failed to send mail (" + str(msgerr) + ")"
 
     smtp.quit()
     # success returns an empty string
