@@ -201,7 +201,7 @@ class ShoppingList(object):
             # writing list to file
             save_shopping_list(listDeCourses)
             # send file to printer
-            messagetospeak = const.PRINT_OK
+            messagetospeak = const.PRINT_OK.format(imp='')
 
         logger.info(messagetospeak)
 
