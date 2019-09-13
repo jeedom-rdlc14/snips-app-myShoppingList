@@ -50,7 +50,7 @@ def extract_nom(intent_message, default_user):
 
 def get_shopping_list():
     """
-        manage the shoppingList
+        to load the shoppingList
     """
     shoppingListFile = "./shoppingList.txt"
     if os.path.isfile(shoppingListFile):
@@ -77,6 +77,10 @@ def save_shopping_list(listDeCourses):
 
 
 def get_message_tosend(listDeCourses):
+    """
+        write shopping as a texwt message
+        :param listDeCourses: shopping list
+    """
     msgToSend = " LISTE DE COURSES\n"
     for item in listDeCourses:
         msgToSend = msgToSend + item + "\n"

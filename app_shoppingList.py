@@ -134,7 +134,9 @@ class ShoppingList(object):
             listDeCourses.remove(item)
             texttospeak = texttospeak + item + ", "
 
-        messagetospeak = const.FLUSH_OK.format(length=lengthlist, texttospeak=texttospeak)
+        messagetospeak = const.FLUSH_OK.format(
+            length=lengthlist, texttospeak=texttospeak
+        )
         logger.info(messagetospeak)
 
         self.terminate_feedback(hermes, intent_message)
@@ -168,7 +170,9 @@ class ShoppingList(object):
             for item in listDeCourses:
                 texttospeak = texttospeak + item + ", "
 
-            messagetospeak = const.LIST_OK.format(length=lengthlist, texttospeak=texttospeak)
+            messagetospeak = const.LIST_OK.format(
+                length=lengthlist, texttospeak=texttospeak
+            )
 
         logger.info(messagetospeak)
 
@@ -185,23 +189,12 @@ class ShoppingList(object):
             :param hermes:
             :param intent_message:
         """
-        # action code ...
-        receivedMessage = "[Received] intent: {}".format(
-            intent_message.intent.intent_name
-        )
-        logger.info(receivedMessage)
-        confidenceMessage = "[Received] confidence: : " + str(
-            intent_message.intent.confidence_score
-        )
-        logger.info(confidenceMessage)
 
         if len(listDeCourses) == 0:
             messagetospeak = const.PRINT_VIDE
         else:
-            # writing list to file
             save_shopping_list(listDeCourses)
-            # send file to printer
-            messagetospeak = const.PRINT_OK.format(imp='')
+            messagetospeak = const.PRINT_OK.format(imp="")
 
         logger.info(messagetospeak)
 
@@ -218,15 +211,6 @@ class ShoppingList(object):
             :param hermes:
             :param intent_message:
         """
-        # action code ...
-        receivedmessage = "[Received] intent: {}".format(
-            intent_message.intent.intent_name
-        )
-        logger.info(receivedmessage)
-        confidenceMessage = "[Received] confidence: : " + str(
-            intent_message.intent.confidence_score
-        )
-        logger.info(confidenceMessage)
 
         media = extract_media(intent_message, "mail")
         user = extract_nom(intent_message, "Alain")
@@ -234,9 +218,7 @@ class ShoppingList(object):
         if len(listDeCourses) == 0:
             messagetospeak = const.SENT_VIDE
         else:
-            # writing list to file and send
             save_shopping_list(listDeCourses)
-            # send to user
             msgToSend = get_message_tosend(listDeCourses)
             response = send_mail(
                 SMTP_ADDR, SMTP_PORT, LOGIN, PASSWD, MAIL_FROM, MAIL_TO, msgToSend
@@ -323,11 +305,14 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("myShoppingList")
     handler = logging.StreamHandler()
-    file_handler = RotatingFileHandler('/var/log/supervisor/assistants/shoppinglist/myshoppinglist.log', maxBytes=10000, backupCount=3)
+    file_handler = RotatingFileHandler(
+        "/var/log/supervisor/assistants/shoppinglist/myshoppinglist.log",
+        maxBytes=10000,
+        backupCount=3,
+    )
     logger.addHandler(file_handler)
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
-
 
     # get the shopping list
     listDeCourses = get_shopping_list()
